@@ -23,4 +23,4 @@ RUN composer install --no-dev --optimize-autoloader \
  && chmod -R 775 storage bootstrap/cache
 
 EXPOSE 10000
-CMD php -S 0.0.0.0:10000 -t public
+CMD ["sh", "start.sh"]
