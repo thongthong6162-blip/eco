@@ -14,8 +14,6 @@
                 </div>
             </div>
 
-
-
             <div class="row special-list">
 
 

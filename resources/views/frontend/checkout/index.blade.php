@@ -3,99 +3,72 @@
 @section('title', 'Checkout')
 
 @section('content')
-    <div class="cart-box-main">
-        <div class="container">
-            <div class="row new-account-login">
-                <!-- Billing Details -->
-                <div class="col-lg-6 mb-3">
-                    <div class="checkout-address">
-                        <div class="title-left">
-                            <h3>Billing Details</h3>
+<section class="checkout spad">
+    <div class="container">
+        <div class="checkout__form">
+            <h4>Billing Details</h4>
+
+            <!-- POST form to checkout.store -->
+            <form action="{{ route('checkout.store') }}" method="POST">
+                @csrf
+
+                <div class="row">
+                    <!-- Billing Details -->
+                    <div class="col-lg-8 col-md-6">
+                        <div class="checkout__input mb-3">
+                            <p>Name <span>*</span></p>
+                            <input type="text" name="customer_name" class="form-control" placeholder="Customer Name" required>
                         </div>
 
-                        <form action="{{ route('checkout.store') }}" method="POST">
-                            @csrf
-                            <div class="form-row">
-                                <div class="form-group col-md-6">
-                                    <label for="customer_name" class="mb-0">Full Name *</label>
-                                    <input type="text" class="form-control" id="customer_name" name="customer_name"
-                                        placeholder="Full Name" required>
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label for="customer_email" class="mb-0">Email Address *</label>
-                                    <input type="email" class="form-control" id="customer_email" name="customer_email"
-                                        placeholder="Email Address" required>
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label for="customer_phone" class="mb-0">Phone *</label>
-                                    <input type="text" class="form-control" id="customer_phone" name="customer_phone"
-                                        placeholder="Phone Number" required>
-                                </div>
-                                <div class="form-group col-md-6">
-                                    <label for="shipping_address" class="mb-0">Address *</label>
-                                    <input type="text" class="form-control" id="shipping_address" name="shipping_address"
-                                        placeholder="Street Address" required>
-                                </div>
-                            </div>
-                            <a href="#" class="btn hvr-hover"
-                                onclick="event.preventDefault(); this.closest('form').submit();">
-                                Place Order
-                            </a>
-                        </form>
+                        <div class="checkout__input mb-3">
+                            <p>Email <span>*</span></p>
+                            <input type="email" name="customer_email" class="form-control" placeholder="Email Address" required>
+                        </div>
+
+                        <div class="checkout__input mb-3">
+                            <p>Phone <span>*</span></p>
+                            <input type="text" name="customer_phone" class="form-control" placeholder="Phone Number" required>
+                        </div>
+
+                        <div class="checkout__input mb-3">
+                            <p>Address <span>*</span></p>
+                            <input type="text" name="shipping_address" class="form-control" placeholder="Street Address" required>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Order Summary -->
-                <div class="col-lg-6 mb-3">
-                    <div class="order-box">
-                        <div class="title-left">
-                            <h3>Your Order</h3>
-                        </div>
-                        <div class="rounded p-2 bg-light">
+                    <!-- Order Summary -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="checkout__order">
+                            <h4>Your Order</h4>
+                            <div class="checkout__order__products">Products <span>Total</span></div>
+
+                            <ul>
+                                @foreach ($cart as $id => $item)
+                                    <li>
+                                        {{ $item['name'] }}
+                                        <span>${{ number_format($item['price'] * $item['quantity'], 2) }}</span>
+                                    </li>
+                                    <!-- Hidden input for quantity & id (optional) -->
+                                    <input type="hidden" name="cart[{{ $id }}][quantity]" value="{{ $item['quantity'] }}">
+                                @endforeach
+                            </ul>
+
                             @php
-                                $subtotal = 0;
+                                $subtotal = array_sum(array_map(fn($item) => $item['price'] * $item['quantity'], $cart));
+                                $vat = $subtotal * 0.1;
+                                $total = $subtotal + $vat;
                             @endphp
-                            @foreach ($cart as $id => $item)
-                                @php
-                                    $itemTotal = $item['price'] * $item['quantity'];
-                                    $subtotal += $itemTotal;
-                                @endphp
-                                <div class="media mb-2 border-bottom">
-                                    <div class="media-body">
-                                        <a href="#">{{ $item['name'] }}</a>
-                                        <div class="small text-muted">
-                                            Price: ${{ number_format($item['price'], 2) }}
-                                            <span class="mx-2">|</span> Qty: {{ $item['quantity'] }}
-                                            <span class="mx-2">|</span> Subtotal: ${{ number_format($itemTotal, 2) }}
-                                        </div>
-                                    </div>
-                                </div>
-                                <input type="hidden" name="cart[{{ $id }}][quantity]"
-                                    value="{{ $item['quantity'] }}">
-                            @endforeach
-                        </div>
 
-                        @php
-                            $vat = $subtotal * 0.1; // 10% VAT
-                            $total = $subtotal + $vat;
-                        @endphp
+                            <div class="checkout__order__subtotal">Subtotal <span>${{ number_format($subtotal, 2) }}</span></div>
+                            <div class="checkout__order__total">VAT (10%) <span class="text-dark">${{ number_format($vat, 2) }}</span></div>
+                            <div class="checkout__order__total">Total <span>${{ number_format($total, 2) }}</span></div>
 
-                        <div class="d-flex">
-                            <h4>Sub Total</h4>
-                            <div class="ml-auto font-weight-bold">${{ number_format($subtotal, 2) }}</div>
-                        </div>
-                        <div class="d-flex">
-                            <h4>VAT (10%)</h4>
-                            <div class="ml-auto font-weight-bold">${{ number_format($vat, 2) }}</div>
-                        </div>
-                        <hr>
-                        <div class="d-flex gr-total">
-                            <h5>Total</h5>
-                            <div class="ml-auto h5">${{ number_format($total, 2) }}</div>
+                            <button type="submit" class="site-btn mt-3 w-100">PLACE ORDER</button>
                         </div>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
+</section>
 @endsection
