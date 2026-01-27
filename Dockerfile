@@ -1,6 +1,6 @@
 FROM php:8.2-cli
 
-# Install system deps
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     unzip \
     git \
@@ -16,7 +16,11 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader
+# Install PHP deps, create sqlite DB, run migrations, fix permissions
+RUN composer install --no-dev --optimize-autoloader \
+ && touch database/database.sqlite \
+ && php artisan migrate --force \
+ && chmod -R 775 storage bootstrap/cache
 
 EXPOSE 10000
 CMD php -S 0.0.0.0:10000 -t public
