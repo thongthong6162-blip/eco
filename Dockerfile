@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . .
-RUN composer install --no-dev --optimize-autoloader \
+RUN composer update fakerphp/faker --no-dev --optimize-autoloader \
  && chmod -R 775 storage bootstrap/cache
 EXPOSE 10000
 CMD ["sh", "start.sh"]
